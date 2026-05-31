@@ -1,0 +1,57 @@
+{% extends 'poll/base.html' %}
+{% block content %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'poll/home.css' %}" />
+
+<div class="poll">
+    <h4>{{ poll.title }}</h4>
+
+    {% if not has_voted %}
+    <form method="POST" action="{% url 'add-vote' poll.id %}">
+        {% csrf_token %}
+        <input id="votedStatus" type="hidden" value="" name="voted">
+    {% endif %}
+
+        {% for item in questions_data %}
+        <div class="question-block">
+            <h5>{{ item.question.text }}</h5>
+
+            {% if has_voted %}
+            <div class="results-list">
+                {% for entry in item.options %}
+                <div class="result-row">
+                    <span class="result-label">{{ entry.option.text }}</span>
+                    <div class="bar-track">
+                        <div class="bar" style="width: {{ entry.percent }}%"></div>
+                    </div>
+                    <span class="result-pct">{{ entry.percent }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+            <small class="total-votes">{{ item.total }} total votes</small>
+
+            {% else %}
+            {% for entry in item.options %}
+            <label>
+                <input name="choice_{{ item.question.id }}" type="radio" value="{{ entry.option.id }}" required>
+                {{ entry.option.text }}
+            </label>
+            <p></p>
+            {% endfor %}
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    {% if not has_voted %}
+        <button type="submit" class="vote-btn"
+            onclick="document.getElementById('votedStatus').value = 'true'">
+            Vote
+        </button>
+    </form>
+    {% endif %}
+
+</div>
+
+{% endblock content %}

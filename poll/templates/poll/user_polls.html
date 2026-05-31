@@ -1,0 +1,27 @@
+{% extends 'poll/base.html' %}
+{% block content %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'poll/home.css'%}" />
+
+<div class="page-heading">
+    <h2>Active Polls</h2>
+</div>
+
+<div class="poll-section">
+    {% for poll in polls %}
+    <a href="{% url 'poll-detail' poll.id %}" class="poll-link">
+        <div class="poll">
+            <h4>{{ poll.topic }}</h4>
+            <span></span>
+            <h5>{{ poll.question }}</h5>
+        </div>
+    </a>
+    {% empty %}
+    <div class="polls-empty">
+        <p>No polls yet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock content %}

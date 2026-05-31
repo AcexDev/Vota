@@ -1,0 +1,103 @@
+{% extends 'poll/base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* ─── Poll Type Select ─── */
+.type-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+}
+
+.type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    max-width: 560px;
+}
+
+.type-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 28px 24px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.type-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+}
+
+.type-card:hover {
+    background: var(--glass-hover);
+    border-color: rgba(62,207,178,0.3);
+    transform: translateY(-2px);
+}
+
+.type-icon {
+    font-size: 1.4rem;
+    color: var(--accent-teal);
+}
+
+.type-label {
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.type-desc {
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1.55;
+}
+</style>
+
+<div class="page-heading">
+    <h2>Create Poll</h2>
+</div>
+
+<p class="type-sub">What kind of poll do you want to run?</p>
+
+<div class="type-grid">
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="poll_type" value="mcq">
+        <button type="submit" class="type-card">
+            <div class="type-icon">⊞</div>
+            <div class="type-label">Multiple Choice</div>
+            <div class="type-desc">Voters pick from predefined options. Great for elections and decisions.</div>
+        </button>
+    </form>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="poll_type" value="text">
+        <button type="submit" class="type-card">
+            <div class="type-icon">✎</div>
+            <div class="type-label">Open Text</div>
+            <div class="type-desc">Voters write a free response. Great for feedback and suggestions.</div>
+        </button>
+    </form>
+
+</div>
+
+{% endblock %}

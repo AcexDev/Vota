@@ -1,0 +1,30 @@
+{% extends 'poll/base.html' %}
+{% block content %}
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'poll/home.css'%}" />
+
+{% if user.is_authenticated %}
+<h2>Hello {{user.username }}</h2>
+{% endif %}
+
+<div class="page-heading">
+    <h2>
+    POLLS
+    </h2>
+</div>
+<div class="poll-section">
+    {% if polls %}
+        {% for poll in polls %}
+        <a href="{% url 'poll-detail' poll.id %}" class="poll-link">
+            <div class="poll">
+                <h4>{{ poll.title }}</h4>
+                <span></span>
+                <h5>{{ poll.title }}</h5>  
+            </div>
+        </a>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% endblock content %}

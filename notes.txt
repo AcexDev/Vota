@@ -1,0 +1,23 @@
+Setting up Google Auth
+
+-Create users app
+-Create Project on Google Cloud Console
+-Define a variable SITE_ID and set it to 1
+-Add 'django.contrib.sites' and 'allauth', and the few other apps to installed apps in settings
+-Configure SOCIAL_ACCOUNT_PROVIDERS in settings Social Applications
+-At the bottom of settings, configure Auth Backends
+-Set Login and Logout Redirect URLs
+-Add required urls to base app urls.py
+-Add allauth.account.middleware.AccountMiddleware' to middleware after contrib.Authentication
+-Make migrations and migrate
+
+To access extracted date from Google in the shell:
+-from allauth.socialaccount.models import SocialAccount
+-account = SocialAccount.objects.all()
+-account[0].extra_data
+
+-Additional: Set methods for handling data in signals
+
+
+-To access allauth template: Navigate to C:\Users\USER\AppData\Local\Programs\Python\Python313\Lib\site-packages\allauth\templates
+-When customising allauth template remember to configure it in TEMPLATES.DIR in settings

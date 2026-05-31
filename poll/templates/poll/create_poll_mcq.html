@@ -1,0 +1,158 @@
+{% extends 'poll/base.html' %}
+{% load static %}
+{% load poll_extras %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'poll/create_poll.css' %}" type="text/css">
+
+<form method="POST" class="create-form">
+    {% csrf_token %}
+    <legend>Create Poll</legend>
+
+    {{ form.as_p }}
+
+    {# ── Question formset management form ── #}
+    {{ question_formset.management_form }}
+
+    <div id="questions-container">
+        {% for q_form in question_formset %}
+        <div class="question-block" data-index="{{ forloop.counter0 }}">
+
+            <h3>Question {{ forloop.counter }}</h3>
+
+            {# Question text input #}
+            {{ q_form.text }}
+            {{ q_form.id }}
+
+            {# Options for this question #}
+            {# Management form injected by JS for new questions, rendered here for existing #}
+            {% with i=forloop.counter0 %}
+            {% with fs=option_formsets|index:i %}
+            <div class="options-block">
+
+                {# Management form hidden inputs #}
+                <input type="hidden" name="options-q{{ i }}-TOTAL_FORMS"   value="{{ fs.total_form_count }}">
+                <input type="hidden" name="options-q{{ i }}-INITIAL_FORMS" value="{{ fs.initial_form_count }}">
+                <input type="hidden" name="options-q{{ i }}-MIN_NUM_FORMS" value="2">
+                <input type="hidden" name="options-q{{ i }}-MAX_NUM_FORMS" value="1000">
+
+                <div class="options-fields" id="options-container-{{ i }}">
+                    {% for o_form in fs %}
+                    <div class="field-row">
+                        {{ o_form.text }}
+                        {{ o_form.id }}
+                        {% if o_form.instance.pk %}
+                            {{ o_form.DELETE }}
+                        {% endif %}
+                        <button type="button" class="btn-remove" onclick="removeField(this)">Remove</button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+            {% endwith %}
+            {% endwith %}
+
+            <button type="button" class="btn-add"
+                    onclick="addOption({{ forloop.counter0 }})">+ Add Option</button>
+
+            {% if question_formset.can_delete %}
+            <label class="delete-label">
+                {{ q_form.DELETE }} Remove this question
+            </label>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="btn-add" onclick="addQuestion()">+ Add Question</button>
+        <button type="submit" class="btn-primary">Create Poll</button>
+    </div>
+</form>
+
+<script>
+// Track how many options exist per question index
+const optionCounts = {};
+
+// Init counts from server-rendered forms
+document.querySelectorAll('.question-block').forEach(block => {
+    const idx = block.dataset.index;
+    optionCounts[idx] = block.querySelectorAll('.field-row').length;
+});
+
+// ── Add Question ───────────────────────────────────────────────────────
+function addQuestion() {
+    const totalForms = document.querySelector('[name="questions-TOTAL_FORMS"]');
+    const idx        = parseInt(totalForms.value);
+    const container  = document.getElementById('questions-container');
+
+    optionCounts[idx] = 2;  // start with 2 blank options
+
+    const block = document.createElement('div');
+    block.className     = 'question-block';
+    block.dataset.index = idx;
+    block.innerHTML = `
+        <h3>Question ${idx + 1}</h3>
+
+        <input type="text"   name="questions-${idx}-text" placeholder="Question text" required>
+        <input type="hidden" name="questions-${idx}-id"   value="">
+
+        <input type="hidden" name="options-q${idx}-TOTAL_FORMS"   value="2">
+        <input type="hidden" name="options-q${idx}-INITIAL_FORMS" value="0">
+        <input type="hidden" name="options-q${idx}-MIN_NUM_FORMS" value="2">
+        <input type="hidden" name="options-q${idx}-MAX_NUM_FORMS" value="1000">
+
+        <div class="options-block">
+            <div class="options-fields" id="options-container-${idx}">
+                <div class="field-row">
+                    <input type="text"   name="options-q${idx}-0-text" placeholder="Option 1">
+                    <input type="hidden" name="options-q${idx}-0-id"   value="">
+                    <button type="button" class="btn-remove" onclick="removeField(this)">Remove</button>
+                </div>
+                <div class="field-row">
+                    <input type="text"   name="options-q${idx}-1-text" placeholder="Option 2">
+                    <input type="hidden" name="options-q${idx}-1-id"   value="">
+                    <button type="button" class="btn-remove" onclick="removeField(this)">Remove</button>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn-add" onclick="addOption(${idx})">+ Add Option</button>
+        <label class="delete-label">
+            <input type="checkbox" name="questions-${idx}-DELETE"> Remove this question
+        </label>
+    `;
+
+    container.appendChild(block);
+    totalForms.value = idx + 1;
+}
+
+// ── Add Option ────────────────────────────────────────────────────────
+function addOption(qIdx) {
+    const count      = optionCounts[qIdx];
+    const container  = document.getElementById(`options-container-${qIdx}`);
+    const totalInput = document.querySelector(`[name="options-q${qIdx}-TOTAL_FORMS"]`);
+
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.innerHTML = `
+        <input type="text"   name="options-q${qIdx}-${count}-text" placeholder="Option ${count + 1}">
+        <input type="hidden" name="options-q${qIdx}-${count}-id"   value="">
+        <button type="button" class="btn-remove" onclick="removeField(this)">Remove</button>
+    `;
+
+    container.appendChild(row);
+    optionCounts[qIdx]++;
+    totalInput.value = optionCounts[qIdx];
+}
+
+// ── Remove field ──────────────────────────────────────────────────────
+function removeField(button) {
+    button.parentElement.remove();
+}
+</script>
+
+{{ form.media }}
+{% endblock %}

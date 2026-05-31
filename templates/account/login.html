@@ -1,0 +1,81 @@
+{% extends "poll/base.html" %}
+{% load static %}
+{% load i18n %}
+{% load allauth account %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'account/login.css' %}">
+
+<div class="auth-wrap">
+  <div class="login-card">
+      <div class="login-dot"></div>
+      <h2>{% trans "Sign In" %}</h2>
+
+      {% if not SOCIALACCOUNT_ONLY %}
+          <p class="login-sub">
+              {% setvar link %}<a href="{% url 'account_signup' %}" class="auth-link">{% endsetvar %}
+              {% setvar end_link %}</a>{% endsetvar %}
+              {% blocktranslate %}No account? {{ link }}Sign up{{ end_link }} first.{% endblocktranslate %}
+          </p>
+
+          {% url 'account_login' as login_url %}
+          <form method="POST" action="{{ login_url }}">
+              {% csrf_token %}
+
+              {% if form.errors %}
+              <div class="auth-form-errors">
+                  {% for field in form %}
+                      {% for error in field.errors %}<span>{{ error }}</span>{% endfor %}
+                  {% endfor %}
+                  {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+              </div>
+              {% endif %}
+
+              {% for field in form %}
+              <div class="auth-field">
+                  <label class="auth-label">{{ field.label }}</label>
+                  {{ field }}
+              </div>
+              {% endfor %}
+
+              {{ redirect_field }}
+
+              <div class="auth-row">
+                  <span></span>
+                  {% url 'account_reset_password' as reset_url %}
+                  {% if reset_url %}
+                  <a href="{{ reset_url }}" class="auth-link">{% trans "Forgot password?" %}</a>
+                  {% endif %}
+              </div>
+
+              <button type="submit" class="auth-btn">{% trans "Sign In" %}</button>
+          </form>
+      {% endif %}
+
+      {% if LOGIN_BY_CODE_ENABLED or PASSKEY_LOGIN_ENABLED %}
+      <div class="login-divider">{% trans "or" %}</div>
+      <div class="auth-alt-actions">
+          {% if PASSKEY_LOGIN_ENABLED %}
+          <button type="submit" form="mfa_login" id="passkey_login" class="auth-btn-outline">
+              {% trans "Sign in with a passkey" %}
+          </button>
+          {% endif %}
+          {% if LOGIN_BY_CODE_ENABLED %}
+          <a href="{{ request_login_code_url }}" class="auth-btn-outline">
+              {% trans "Send me a sign-in code" %}
+          </a>
+          {% endif %}
+      </div>
+      {% endif %}
+
+      {% if SOCIALACCOUNT_ENABLED %}
+      <div class="login-divider">{% trans "or" %}</div>
+      {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+      {% endif %}
+  </div>
+</div>
+
+{% if PASSKEY_LOGIN_ENABLED %}
+{% include "mfa/webauthn/snippets/login_script.html" with button_id="passkey_login" %}
+{% endif %}
+{% endblock %}
