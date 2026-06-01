@@ -83,7 +83,7 @@ Poll ──< Question ──< Options
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-username/vota.git
+git clone https://github.com/AcexDev/vota.git
 cd vota
 
 # Create and activate a virtual environment
